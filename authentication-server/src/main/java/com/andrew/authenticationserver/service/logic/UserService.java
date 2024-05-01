@@ -39,14 +39,14 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public void createUserWaitingStatus(RegistrationUserDto registrationUserDto, int verificationCode){
+    public void createUserWaitingStatus(RegistrationUserDto registrationUserDto){
         User user = new User();
         user.setEmail(registrationUserDto.getEmail());
         user.setRoles(List.of(getUserRole()));
         user.setPassword(passwordEncoder.encode(registrationUserDto.getPassword()));
         user.setStatus("W");
 
-        user.setCode(verificationCode);
+        user.setCode(registrationUserDto.getCode());
         userRepository.save(user);
     }
 

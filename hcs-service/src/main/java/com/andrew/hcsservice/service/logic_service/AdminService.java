@@ -2,6 +2,7 @@ package com.andrew.hcsservice.service.logic_service;
 
 import com.andrew.hcsservice.model.dto.DocDTO;
 import com.andrew.hcsservice.model.entity.Owner;
+import com.andrew.hcsservice.model.entity.status.AmndStatus;
 import com.andrew.hcsservice.model.entity.status.DocStatus;
 import com.andrew.hcsservice.repository.DocRepository;
 import com.andrew.hcsservice.service.addit_service.EmailService;
@@ -28,14 +29,15 @@ public class AdminService {
 
     public ResponseEntity<?> registerNewOwner(DocDTO docDTO){
         Owner newOwner = ownerService.mapDocOnOwner(docDTO);
-        if(ownerService.isFindOwner(newOwner.getEmail(), newOwner.getPassport())){
+        if(!ownerService.isFindOwner(newOwner.getEmail(), newOwner.getPassport())){
             return ResponseEntity.badRequest().body("Ошибка!");
         } else {
             newOwner.setAmndDate(LocalDate.now());
-            newOwner.setAmndState(DocStatus.POSTED.getShortName());
+            newOwner.setAmndState(AmndStatus.INACTIVE.getShortName());
             ownerService.addOwner(newOwner);
-            String url = "http://localhost:7170/";
-            return ResponseEntity.ok().body(newOwner);
+            String url = "http://localhost:7170/registration/send-ver-code?email=" + docDTO.getEmail();
+            emailService.sendEmail(docDTO.getEmail(), url);
+            return ResponseEntity.ok().body(url);
         }
     }
 }

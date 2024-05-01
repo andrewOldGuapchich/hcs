@@ -1,5 +1,6 @@
 package com.andrew.authenticationserver.service.registration;
 
+import com.andrew.authenticationserver.entity.dtos.PasswordDto;
 import com.andrew.authenticationserver.entity.dtos.RegistrationUserDto;
 import com.andrew.authenticationserver.entity.dtos.jwt.JwtRequest;
 import com.andrew.authenticationserver.service.additional.EmailService;
@@ -30,16 +31,23 @@ public class RegistrationService {
         }
     }
 
-    public ResponseEntity<?> sendEmailCode (RegistrationUserDto registrationUserDto){
-        if(!registrationUserDto.getPassword()
-                .equals(registrationUserDto.getConfirmPassword())){
+    public ResponseEntity<?> sendEmailCode (PasswordDto passwordDto, String email){
+        if(!passwordDto.getPassword()
+                .equals(passwordDto.getConfirmPassword())){
             return ResponseEntity.badRequest().body("Пароли не совпадают!");
         }
-        if(userService.findByEmail(registrationUserDto.getEmail()).isPresent()){
+        if(userService.findByEmail(email).isPresent()){
             return ResponseEntity.badRequest().body("Такой пользователь уже зарегистрирован!");
         }
         int code = generateCode();
-        userService.createUserWaitingStatus(registrationUserDto, code);
+
+        RegistrationUserDto registrationUserDto = new RegistrationUserDto();
+        registrationUserDto.setPassword(passwordDto.getPassword());
+        registrationUserDto.setConfirmPassword(passwordDto.getConfirmPassword());
+        registrationUserDto.setEmail(email);
+        registrationUserDto.setCode(code);
+
+        userService.createUserWaitingStatus(registrationUserDto);
         sendPassword(registrationUserDto.getEmail(), code);
         return ResponseEntity.ok("Send message");
     }
