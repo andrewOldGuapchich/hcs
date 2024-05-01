@@ -13,8 +13,8 @@ public class RegistrationController {
     private final RegistrationService registrationService;
 
 
-    @PostMapping("/send-ver-code")
-    public ResponseEntity<?> send(@RequestBody RegistrationUserDto registrationUserDto){
+    @PostMapping("/send-ver-code/{email}")
+    public ResponseEntity<?> send(@RequestBody RegistrationUserDto registrationUserDto, @PathVariable String email){
         return registrationService.sendEmailCode(registrationUserDto);
     }
 
