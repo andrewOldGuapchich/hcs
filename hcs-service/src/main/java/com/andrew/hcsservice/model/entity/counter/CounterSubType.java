@@ -1,7 +1,7 @@
 package com.andrew.hcsservice.model.entity.counter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 
 import java.util.List;

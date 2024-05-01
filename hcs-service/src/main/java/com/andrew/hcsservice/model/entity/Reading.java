@@ -3,7 +3,7 @@ package com.andrew.hcsservice.model.entity;
 import com.andrew.hcsservice.model.entity.counter.Counter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 
 import java.util.Date;

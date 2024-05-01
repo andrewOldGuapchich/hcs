@@ -2,8 +2,8 @@ package com.andrew.hcsservice.model.entity;
 
 import com.andrew.hcsservice.model.entity.status.DocStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+import javax.persistence.*;
+import javax.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

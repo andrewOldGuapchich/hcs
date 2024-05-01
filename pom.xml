@@ -10,7 +10,6 @@
     <packaging>pom</packaging> <!-- Обязательно для родительского POM -->
 
     <modules>
-        <module>auth-server</module> <!-- Имя модуля - это имя каталога -->
         <module>hcs-service</module>
         <module>authentication-server</module>
     </modules>
