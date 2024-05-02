@@ -1,4 +1,4 @@
 package com.andrew.hcsservice.model.dto;
 
-public class OwnerDTO {
+public class OwnerDto {
 }

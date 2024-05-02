@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasAuthority("ADMIN")
                 .antMatchers("/internal/**").hasAuthority("WORKER")
+                .antMatchers("/flat/**").hasAuthority("ADMIN")
                 .antMatchers("/doc/**").permitAll()
                 .antMatchers("/user/**").hasAuthority("USER")
                 .anyRequest().denyAll()

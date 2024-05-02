@@ -1,12 +1,11 @@
 package com.andrew.hcsservice.service.logic_service;
 
-import com.andrew.hcsservice.model.dto.DocDTO;
+import com.andrew.hcsservice.model.dto.DocDto;
 import com.andrew.hcsservice.model.entity.Owner;
 import com.andrew.hcsservice.model.entity.status.AmndStatus;
 import com.andrew.hcsservice.model.entity.status.DocStatus;
 import com.andrew.hcsservice.repository.DocRepository;
 import com.andrew.hcsservice.service.addit_service.EmailService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class AdminService {
         return ResponseEntity.ok().body(docRepository.findByStatus(status));
     }
 
-    public ResponseEntity<?> registerNewOwner(DocDTO docDTO){
+    public ResponseEntity<?> registerNewOwner(DocDto docDTO){
         Owner newOwner = ownerService.mapDocOnOwner(docDTO);
         if(!ownerService.isFindOwner(newOwner.getEmail(), newOwner.getPassport())){
             return ResponseEntity.badRequest().body("Ошибка!");

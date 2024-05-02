@@ -1,6 +1,6 @@
 package com.andrew.hcsservice.service.logic_service;
 
-import com.andrew.hcsservice.model.dto.DocDTO;
+import com.andrew.hcsservice.model.dto.DocDto;
 import com.andrew.hcsservice.model.entity.Owner;
 import com.andrew.hcsservice.model.entity.status.AmndStatus;
 import com.andrew.hcsservice.repository.OwnerRepository;
@@ -19,7 +19,7 @@ public class OwnerService {
         ownerRepository.save(owner);
     }
 
-    public Owner mapDocOnOwner(DocDTO docDTO){
+    public Owner mapDocOnOwner(DocDto docDTO){
         ModelMapper mapper = new ModelMapper();
         Owner newOwner = mapper.map(docDTO, Owner.class);
         newOwner.setAmndDate(LocalDate.now());

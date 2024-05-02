@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AuthDTO {
+public class AuthDto {
     private String email;
     private String password;
     private List<String> roles;

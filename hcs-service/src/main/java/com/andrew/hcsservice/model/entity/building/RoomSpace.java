@@ -1,10 +1,12 @@
 package com.andrew.hcsservice.model.entity.building;
 
+import com.andrew.hcsservice.model.entity.status.RoomSpaceStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -17,19 +19,22 @@ public class RoomSpace {
 
     @Column(name = "amnd_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date amndDate;
+    private LocalDate amndDate;
 
     @Column(name = "amnd_state")
     private String amndState;
 
     @Column(name = "_number")
-    private String number;
+    private int number;
 
     @Column(name = "total_area")
     private Double totalArea;
 
     @Column(name = "living_area")
     private Double livingArea;
+
+    @Column(name = "status")
+    private String status;
 
     @OneToOne(
             fetch = FetchType.LAZY,
@@ -40,4 +45,8 @@ public class RoomSpace {
     private RoomSpace oidRoomSpace;
 
     //добавить строение
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "building_id")
+    @JsonIgnore
+    private Building building;
 }

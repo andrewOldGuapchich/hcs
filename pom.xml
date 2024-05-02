@@ -7,7 +7,7 @@
     <groupId>com.example</groupId>
     <artifactId>parent-project</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging> <!-- Обязательно для родительского POM -->
+    <packaging>pom</packaging>
 
     <modules>
         <module>hcs-service</module>

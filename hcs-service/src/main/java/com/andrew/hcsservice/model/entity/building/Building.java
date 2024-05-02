@@ -1,11 +1,13 @@
 package com.andrew.hcsservice.model.entity.building;
 
+import com.andrew.hcsservice.model.dto.roomspace.RoomSpaceCreateDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -36,6 +38,7 @@ public class Building {
             fetch = FetchType.LAZY,
             optional = false
     )
+    @JoinColumn(name = "building_oid")
     @JsonIgnore
     private Building oidBuilding;
 
@@ -44,4 +47,9 @@ public class Building {
 
     @Column(name = "_number")
     private int number;
+
+    @OneToMany(mappedBy = "building",
+            fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<RoomSpace> roomSpaceList;
 }
