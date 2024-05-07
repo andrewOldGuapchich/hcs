@@ -6,5 +6,6 @@ import lombok.Data;
 public class BuildingCreateDto {
     private int roomCount;
     private int number;
-    private int idStreet;
+    private Long idStreet;
+    private String buildingStatus;
 }

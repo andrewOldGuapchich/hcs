@@ -13,6 +13,7 @@ public class AuthorizationController {
 
     @GetMapping("/byToken")
     public ResponseEntity<?> authorize(@RequestHeader("Authorization") String token){
+        System.out.println("work controller!");
         return authorizationService.tokenAuthorize(token);
     }
 }

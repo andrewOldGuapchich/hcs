@@ -18,16 +18,13 @@ public class JwtFilter extends OncePerRequestFilter {
     private final AuthService authService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("filter work");
         String token = request.getHeader("Authorization");
-        System.out.println(token);
         try{
             UserDetails regUser = authService.loadUserByUsername(token);
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(
                             regUser.getUsername(), null, regUser.getAuthorities()
                     );
-            System.out.println(regUser.getUsername() + " " + regUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         } catch (Exception e){
             e.printStackTrace();

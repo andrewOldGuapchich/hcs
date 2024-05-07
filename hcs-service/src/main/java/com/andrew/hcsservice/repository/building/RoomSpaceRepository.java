@@ -15,9 +15,10 @@ public interface RoomSpaceRepository extends JpaRepository<RoomSpace, Long> {
     Optional<RoomSpace> findByNumberAndBuilding(int number, Building building);
     Optional<RoomSpace> findById(Long id);
 
-   /* @Query("select rs from RoomSpace rs " +
-            "where rs.oidRoomSpace = :id")
-    List<RoomSpace> getOldRoomSpace(@Param("id") Long id);*/
+    @Query("select rs from RoomSpace rs " +
+            "where rs.building = :building" +
+            " and rs.amndState = 'A'")
+    List<RoomSpace> findByBuilding(@Param("building") Building building);
 
     @Query("select rs from RoomSpace rs " +
             "join rs.building b " +

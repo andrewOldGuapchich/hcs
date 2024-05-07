@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .antMatchers("/admin/**").hasAuthority("ADMIN")
                 .antMatchers("/internal/**").hasAuthority("WORKER")
                 .antMatchers("/flat/**").hasAuthority("ADMIN")
+                .antMatchers("/street/**").hasAuthority("ADMIN")
                 .antMatchers("/doc/**").permitAll()
                 .antMatchers("/user/**").hasAuthority("USER")
                 .anyRequest().denyAll()

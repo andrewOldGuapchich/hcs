@@ -1,4 +1,4 @@
-package com.andrew.hcsservice.controller;
+package com.andrew.hcsservice.config.controller;
 
 import com.andrew.hcsservice.model.dto.DocDto;
 import com.andrew.hcsservice.service.logic_service.DocService;

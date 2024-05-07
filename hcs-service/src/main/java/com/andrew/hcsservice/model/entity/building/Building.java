@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class Building {
 
     @Column(name = "amnd_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date amndDate;
+    private LocalDate amndDate;
 
     @Column(name = "amnd_state")
     private String amndState;
@@ -29,10 +30,8 @@ public class Building {
     @JsonIgnore
     private Street street;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_id")
-    @JsonIgnore
-    private BuildingStatus buildingStatus;
+    @Column(name = "building_status")
+    private String buildingStatus;
 
     @OneToOne(
             fetch = FetchType.LAZY,
@@ -46,7 +45,7 @@ public class Building {
     private int roomCount;
 
     @Column(name = "_number")
-    private int number;
+    private String number;
 
     @OneToMany(mappedBy = "building",
             fetch = FetchType.LAZY)

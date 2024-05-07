@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Street {
 
     @Column(name = "amnd_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date amndDate;
+    private LocalDate amndDate;
 
     @Column(name = "amnd_state")
     private String amndState;
