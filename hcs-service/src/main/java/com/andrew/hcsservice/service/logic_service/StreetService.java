@@ -6,7 +6,7 @@ import com.andrew.hcsservice.model.dto.street.CreateStreetDto;
 import com.andrew.hcsservice.model.dto.street.InfoStreetDto;
 import com.andrew.hcsservice.model.entity.building.Building;
 import com.andrew.hcsservice.model.entity.building.Street;
-import com.andrew.hcsservice.model.entity.status.AmndStatus;
+import com.andrew.hcsservice.model.status.AmndStatus;
 import com.andrew.hcsservice.repository.building.BuildingRepository;
 import com.andrew.hcsservice.repository.building.StreetRepository;
 import lombok.RequiredArgsConstructor;
@@ -63,8 +63,8 @@ public class StreetService {
             newStreet.setAmndState(AmndStatus.ACTIVE.getShortName());
             newStreet.setOidStreet(oldStreet);
 
-            streetRepository.save(oldStreet);
             streetRepository.save(newStreet);
+            streetRepository.save(oldStreet);
 
             List<Building> buildings = buildingRepository.findBuildingByStreet(oldStreet);
             for(Building building : buildings){
@@ -72,7 +72,6 @@ public class StreetService {
             }
 
             buildingRepository.saveAll(buildings);
-
             return ResponseEntity.ok()
                     .body(new ResponseBody<>(HttpStatus.OK.value(), newStreet));
         } catch (AppException appException){

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class BuildingCreateDto {
     private int roomCount;
-    private int number;
+    private String number;
     private Long idStreet;
     private String buildingStatus;
 }

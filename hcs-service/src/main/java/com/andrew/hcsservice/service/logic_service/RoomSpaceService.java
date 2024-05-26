@@ -3,10 +3,10 @@ package com.andrew.hcsservice.service.logic_service;
 import com.andrew.hcsservice.exceptions.AppException;
 import com.andrew.hcsservice.exceptions.ResponseBody;
 import com.andrew.hcsservice.model.dto.roomspace.RoomSpaceCreateDto;
+import com.andrew.hcsservice.model.entity.Owner;
 import com.andrew.hcsservice.model.entity.building.Building;
 import com.andrew.hcsservice.model.entity.building.RoomSpace;
-import com.andrew.hcsservice.model.entity.status.AmndStatus;
-import com.andrew.hcsservice.model.entity.status.RoomSpaceStatus;
+import com.andrew.hcsservice.model.status.AmndStatus;
 import com.andrew.hcsservice.repository.building.BuildingRepository;
 import com.andrew.hcsservice.repository.building.RoomSpaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -84,12 +84,21 @@ public class RoomSpaceService {
             RoomSpace newRoomSpace = mapperToRoomSpace(oldRoomSpace);
             newRoomSpace.setAmndState(AmndStatus.CLOSE.getShortName());
             roomSpaceRepository.save(newRoomSpace);
+
             return ResponseEntity
                     .ok(new ResponseBody<>(HttpStatus.OK.value(), newRoomSpace));
         } catch (AppException e){
             return ResponseEntity.badRequest()
                     .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
         }
+    }
+
+    public List<RoomSpace> findRoomSpacesByOwner(Owner owner){
+        return roomSpaceRepository.findByOwner(owner);
+    }
+
+    public List<RoomSpace> findListById(List<Long> ids){
+        return roomSpaceRepository.findById(ids);
     }
 
     private RoomSpace mapperToRoomSpace(RoomSpace roomSpace){

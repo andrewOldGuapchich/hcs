@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -52,4 +53,9 @@ public class Owner {
     @JoinColumn(name = "owner_oid")
     @JsonIgnore
     private Owner oidOwner;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner",
+        cascade = CascadeType.ALL)
+    private List<OwnerRoom> ownerRoomList;
 }

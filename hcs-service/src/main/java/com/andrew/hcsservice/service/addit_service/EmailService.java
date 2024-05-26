@@ -19,16 +19,14 @@ public class EmailService {
     //@Value("${auth.config.url}")
     //private String url;
 
-    public void sendEmail(String toAddress, String url) {
-        String htmlContent = "<p>Для прохождения процесса регистрации перейдите по ссылке - " +
-                "<a href=\"" + url + "\">регистрация</a></p>";
+    public void sendEmail(String toAddress, String message) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setFrom(fromAddress);
             helper.setTo(toAddress);
             helper.setSubject("ЖКХ регистрация");
-            helper.setText(htmlContent, true);
+            helper.setText(message, true);
             javaMailSender.send(mimeMessage);
         } catch (Exception e) {
             e.printStackTrace();

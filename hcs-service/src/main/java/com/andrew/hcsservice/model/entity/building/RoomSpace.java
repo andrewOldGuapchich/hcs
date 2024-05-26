@@ -1,13 +1,14 @@
 package com.andrew.hcsservice.model.entity.building;
 
-import com.andrew.hcsservice.model.entity.status.RoomSpaceStatus;
+import com.andrew.hcsservice.model.entity.OwnerRoom;
+import com.andrew.hcsservice.model.entity.doc.UpdateDoc;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -49,4 +50,15 @@ public class RoomSpace {
     @JoinColumn(name = "building_id")
     @JsonIgnore
     private Building building;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "roomSpace",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<OwnerRoom> ownerRoomList;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "roomSpace",
+            cascade = CascadeType.ALL)
+    private List<UpdateDoc> updateDocs;
 }

@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
+
 @Service
 public class LogicService<T> {
-    private final JpaRepository<T, Long> repository;
+    /*
 
     public ResponseEntity<?> createEntity(T data, Long id){
         Optional<T> optionalT = repository.findById(id);

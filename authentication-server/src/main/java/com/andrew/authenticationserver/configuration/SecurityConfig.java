@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .antMatchers("/authorize/**").permitAll()
                 .antMatchers("/authentication/**").permitAll()
                 .antMatchers("/registration/**").permitAll()
+                .antMatchers("/user/**").permitAll()
                 .anyRequest().denyAll();
         return http.build();
     }

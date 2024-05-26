@@ -6,6 +6,7 @@ import com.andrew.authenticationserver.entity.dtos.RegistrationUserDto;
 import com.andrew.authenticationserver.repository.RoleRepository;
 import com.andrew.authenticationserver.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -48,6 +49,15 @@ public class UserService implements UserDetailsService {
 
         user.setCode(registrationUserDto.getCode());
         userRepository.save(user);
+    }
+
+    public ResponseEntity<?> closeUserCredential(String email){
+        User user = findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(
+                String.format("Пользователь '%s' не найден!", email)
+        ));
+        user.setStatus("C");
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
     }
 
     @Override

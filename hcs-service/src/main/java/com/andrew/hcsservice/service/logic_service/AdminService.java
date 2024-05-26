@@ -1,42 +1,108 @@
 package com.andrew.hcsservice.service.logic_service;
 
-import com.andrew.hcsservice.model.dto.DocDto;
+import com.andrew.hcsservice.exceptions.ResponseBody;
+import com.andrew.hcsservice.model.entity.doc.Doc;
 import com.andrew.hcsservice.model.entity.Owner;
-import com.andrew.hcsservice.model.entity.status.AmndStatus;
-import com.andrew.hcsservice.model.entity.status.DocStatus;
-import com.andrew.hcsservice.repository.DocRepository;
+import com.andrew.hcsservice.model.status.DocStatus;
 import com.andrew.hcsservice.service.addit_service.EmailService;
+import com.andrew.hcsservice.service.logic_service.doc.DocService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
-    private final DocRepository docRepository;
-    private final OwnerService ownerService;
+    private DocService docService;
+    private OwnerService ownerService;
     private final EmailService emailService;
-
-    public ResponseEntity<?> getDocWantedStatus(){
-        String status = DocStatus.WAITING.getShortName();
-        System.out.println(docRepository.findByStatus(status).size());
-        return ResponseEntity.ok().body(docRepository.findByStatus(status));
+    private final RestTemplate restTemplate;
+    @Autowired
+    public void setDocService(@Lazy DocService docService) {
+        this.docService = docService;
     }
 
-    public ResponseEntity<?> registerNewOwner(DocDto docDTO){
-        Owner newOwner = ownerService.mapDocOnOwner(docDTO);
-        if(!ownerService.isFindOwner(newOwner.getEmail(), newOwner.getPassport())){
-            return ResponseEntity.badRequest().body("Ошибка!");
-        } else {
-            newOwner.setAmndDate(LocalDate.now());
-            newOwner.setAmndState(AmndStatus.INACTIVE.getShortName());
-            ownerService.addOwner(newOwner);
-            String url = "http://localhost:7170/registration/send-ver-code?email=" + docDTO.getEmail();
-            emailService.sendEmail(docDTO.getEmail(), url);
-            return ResponseEntity.ok().body(url);
+    @Autowired
+    public void setOwnerService(@Lazy OwnerService ownerService) {
+        this.ownerService = ownerService;
+    }
+    public ResponseEntity<?> getWaitingStatus(String type){
+        return ResponseEntity.ok().body(docService.getWaitingStatus(type));
+    }
+
+    public ResponseEntity<?> sendDocList(List<Long> idDocList){
+        List<Doc> resultDocList = docService.findByIds(idDocList);
+        LinkedHashMap<Long, String> linkedHashMap = ownerService.mapAndRegisterOwner(resultDocList);
+        linkedHashMap.forEach((key, value) -> {
+            Doc doc = docService.findById(key).get();
+            if (value.equals("Posted")){
+                String url = "http://localhost:7170/registration/send-ver-code?email=" + doc.getEmail();
+                String htmlContent = "<p>Для прохождения процесса регистрации перейдите по ссылке - " +
+                        "<a href=\"" + url + "\">регистрация</a></p>";
+                emailService.sendEmail(doc.getEmail(), htmlContent);
+            } else{
+                String message = "Your application was rejected by the moderators";
+                emailService.sendEmail(doc.getEmail(), message);
+            }
+        });
+
+        return ResponseEntity.ok(
+                new ResponseBody<>(HttpStatus.OK.value(), linkedHashMap)
+        );
+    }
+
+    public ResponseEntity<?> postingDeleteDoc(Long id){
+        Optional<Doc> deleteDocOptional = docService.findById(id);
+        if(deleteDocOptional.isEmpty()){
+            return ResponseEntity.badRequest().body(
+                    new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "Doc not found!"));
         }
+
+        Doc deleteDoc = deleteDocOptional.get();
+        Optional<Owner> deleteOwnerOptional = ownerService.findByPassportAndEmail(deleteDoc.getEmail(), deleteDoc.getPassport());
+        if(deleteOwnerOptional.isEmpty()){
+            return ResponseEntity.badRequest().body(
+                    new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "Owner not found!"));
+        }
+
+
+        Owner deleteOwner = deleteOwnerOptional.get();
+        ownerService.deleteOwner(deleteOwner.getId());
+
+        String url = UriComponentsBuilder.fromHttpUrl("http://localhost:7170/user/close-user/" + deleteOwner.getEmail())
+                .encode()
+                .toUriString();
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        restTemplate
+                .exchange(url, HttpMethod.POST, entity, Object.class);
+
+        deleteDoc.setStatus(DocStatus.POSTED.getShortName());
+        docService.saveDoc(deleteDoc);
+
+        return ResponseEntity.ok()
+                .body(new ResponseBody<>(HttpStatus.OK.value(), deleteDoc));
+    }
+
+
+
+    public ResponseEntity<?> findAllOwner(){
+        return ResponseEntity.ok()
+                .body(new ResponseBody<>(HttpStatus.OK.value(), ownerService.findAll()));
+    }
+
+    public ResponseEntity<?> findAllOwnerInfo(){
+        return ResponseEntity.ok()
+                .body(new ResponseBody<>(HttpStatus.OK.value(), ownerService.findAllWithRoomSpaces()));
     }
 }
