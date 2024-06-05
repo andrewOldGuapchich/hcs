@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 @Data
 @Entity
@@ -25,7 +26,7 @@ public class Reading {
 
     @Column(name = "_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date date;
+    private LocalDate date;
 
     @Column(name = "_value")
     private double value;
@@ -34,4 +35,7 @@ public class Reading {
     @JoinColumn(name = "counter_id")
     @JsonIgnore
     private Counter counter;
+
+    @Column(name = "period")
+    private String period;
 }

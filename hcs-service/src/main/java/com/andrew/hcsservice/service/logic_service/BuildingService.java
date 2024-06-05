@@ -26,34 +26,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BuildingService {
     private final BuildingRepository buildingRepository;
-    private final StreetRepository streetRepository;
+    private final StreetService streetService;
     private final RoomSpaceRepository roomSpaceRepository;
-    private final ModelMapper mapper;
-
-
-    public ResponseEntity<?> getBuildInfo(Long idBuilding){
-        try{
-            Optional<Building> buildingOptional = buildingRepository.findById(idBuilding);
-            Building building = validateAndGetBuilding(buildingOptional);
-            InfoBuildingDto item = new InfoBuildingDto();
-
-            item.setStreet(building.getStreet().getName());
-            item.setId(building.getId());
-            item.setRoomSpaceList(building.getRoomSpaceList());
-            item.setCountRoomSpace(building.getRoomCount());
-            return ResponseEntity.ok(item);
-        } catch (AppException appException) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
-        }
-    }
 
     public ResponseEntity<?> getAll(){
+        System.out.println("Service");
         List<Building> buildingList = buildingRepository.findAll();
         List<InfoBuildingDto> infoBuildingDto = new ArrayList<>();
         for (Building b : buildingList){
             InfoBuildingDto item = new InfoBuildingDto();
             item.setStreet(b.getStreet().getName());
+            item.setNumber(b.getNumber());
             item.setId(b.getId());
             item.setRoomSpaceList(b.getRoomSpaceList());
             item.setCountRoomSpace(b.getRoomCount());
@@ -64,41 +47,34 @@ public class BuildingService {
 
     public ResponseEntity<?> getBuildInfo(String nameStreet, String number){
         try{
-            Optional<Street> streetOptional = streetRepository.findStreetByName(nameStreet);
-            if(streetOptional.isEmpty()){
-                return  ResponseEntity.badRequest()
-                        .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "Error! Street not found"));
-            } else {
-                Street street = streetOptional.get();
+                Street street = streetService.findByName(nameStreet);
                 Building building = validateAndGetBuilding(
                         buildingRepository.findBuildingByStreetAndNumber(street, number));
                 InfoBuildingDto item = new InfoBuildingDto();
 
                 item.setStreet(building.getStreet().getName());
+                item.setNumber(building.getNumber());
                 item.setId(building.getId());
                 item.setRoomSpaceList(building.getRoomSpaceList());
                 item.setCountRoomSpace(building.getRoomCount());
-                return ResponseEntity.ok(item);
-            }
+
+                return ResponseEntity.ok()
+                        .body(new ResponseBody<>(HttpStatus.OK.value(), item));
         } catch (AppException appException) {
             return ResponseEntity.badRequest()
                     .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
         }
     }
 
-    public ResponseEntity<?> getHistoryInfo(Long idBuilding) {
+    public ResponseEntity<?> getHistoryInfo(String streetName, String number) {
+        Street street = streetService.findByName(streetName);
         return ResponseEntity.ok()
                 .body(new ResponseBody<>(HttpStatus.OK.value(),
-                        buildingRepository.findHistoryBuildingInfo(idBuilding)));
+                        buildingRepository.findHistoryBuildingInfo(street.getId(), number)));
     }
 
     public ResponseEntity<?> createBuilding(BuildingCreateDto buildingCreateDto){
-        Optional<Street> optionalStreet = streetRepository.findById(buildingCreateDto.getIdStreet());
-        if(optionalStreet.isEmpty())
-            return ResponseEntity.badRequest()
-                    .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "Street not found!"));
-
-        Street street = optionalStreet.get();
+        Street street = streetService.findByName(buildingCreateDto.getStreetName());
         if(buildingRepository
                 .findBuildingByStreetAndNumber(street, buildingCreateDto.getNumber())
                 .isPresent()) {
@@ -110,7 +86,6 @@ public class BuildingService {
         building.setRoomCount(buildingCreateDto.getRoomCount());
         building.setNumber(buildingCreateDto.getNumber());
         building.setBuildingStatus(buildingCreateDto.getBuildingStatus());
-                //mapper.map(buildingCreateDto, Building.class);
         building.setStreet(street);
         building.setAmndState(AmndStatus.ACTIVE.getShortName());
         building.setAmndDate(LocalDate.now());
@@ -121,13 +96,13 @@ public class BuildingService {
                 .body(new ResponseBody<>(HttpStatus.OK.value(), building));
     }
 
-    public ResponseEntity<?> updateBuilding(BuildingCreateDto updateBuildingDto, Long idBuilding){
-        Optional<Building> optionalBuilding = buildingRepository.findById(idBuilding);
+    public ResponseEntity<?> updateBuilding(BuildingCreateDto updateBuildingDto, String streetName, String number){
+        Street street = streetService.findByName(streetName);
+        Optional<Building> optionalBuilding = buildingRepository.findBuildingByStreetAndNumber(street, number);
         try{
             Building oldBuilding = validateAndGetBuilding(optionalBuilding);
             oldBuilding.setAmndDate(LocalDate.now());
             oldBuilding.setAmndState(AmndStatus.INACTIVE.getShortName());
-            oldBuilding.setId(idBuilding);
 
             Building newBuilding = new Building();
             newBuilding.setRoomCount(updateBuildingDto.getRoomCount());
@@ -155,11 +130,11 @@ public class BuildingService {
         }
     }
 
-    public ResponseEntity<?> deleteBuilding(Long id){
-        Optional<Building> buildingOptional = buildingRepository.findById(id);
+    public ResponseEntity<?> deleteBuilding(String streetName, String number){
+        Street street = streetService.findByName(streetName);
+        Optional<Building> optionalBuilding = buildingRepository.findBuildingByStreetAndNumber(street, number);
         try{
-            Building deleteBuilding = validateAndGetBuilding(buildingOptional);
-            deleteBuilding.setId(id);
+            Building deleteBuilding = validateAndGetBuilding(optionalBuilding);
             deleteBuilding.setAmndDate(LocalDate.now());
             deleteBuilding.setAmndState(AmndStatus.INACTIVE.getShortName());
             buildingRepository.save(deleteBuilding);
@@ -180,15 +155,22 @@ public class BuildingService {
         }
     }
 
-     private Building getNewBuilding(Building oldBuilding){
-         Building building = new Building();
-         building.setRoomCount(oldBuilding.getRoomCount());
-         building.setStreet(oldBuilding.getStreet());
-         building.setAmndDate(LocalDate.now());
-         building.setAmndState(AmndStatus.CLOSE.getShortName());
+    public Building findBuildingByStreetAndNumber(String streetName, String number){
+        Street street = streetService.findByName(streetName);
+        return validateAndGetBuilding(buildingRepository.findBuildingByStreetAndNumber(street, number));
+    }
+
+    private Building getNewBuilding(Building oldBuilding) {
+        Building building = new Building();
+        building.setRoomCount(oldBuilding.getRoomCount());
+        building.setStreet(oldBuilding.getStreet());
+        building.setBuildingStatus(oldBuilding.getBuildingStatus());
+        building.setNumber(oldBuilding.getNumber());
+        building.setAmndDate(LocalDate.now());
+        building.setAmndState(AmndStatus.CLOSE.getShortName());
 
         List<RoomSpace> newRoomSpaces = new ArrayList<>();
-        for(RoomSpace roomSpace : oldBuilding.getRoomSpaceList()){
+        for (RoomSpace roomSpace : oldBuilding.getRoomSpaceList()) {
             roomSpace.setBuilding(building);
             newRoomSpaces.add(roomSpace);
         }

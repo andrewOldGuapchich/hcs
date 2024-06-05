@@ -24,7 +24,7 @@ public interface OwnerInterfaces {
 
     List<InfoOwnerDto> findAllWithRoomSpaces();
 
-    Optional<Owner> findByPassportAndEmail(String email, String passport);
+    Optional<Owner> findByEmailAndPassport(String email, String passport);
 
     LinkedHashMap<Long, String> mapAndRegisterOwner(List<Doc> docList);
 

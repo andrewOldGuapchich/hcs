@@ -1,0 +1,17 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor "New user"
+box Logic service
+    participant "Document Service"
+end box
+
+database "Housing Database"
+
+"New user" -> "Document Service" :<b>Запрос на создание заявления на регистрацию\n<b>POST /create-doc
+"Document Service" -> "Housing Database" :Добавление записи в таблицу doc со\n статусом 'W'
+"Housing Database" --> "Document Service" :Ответ от базы данных на операцию вставки
+"Document Service" --> "New user" :<b>200 OK
+@enduml

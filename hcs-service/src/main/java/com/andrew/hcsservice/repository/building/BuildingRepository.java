@@ -32,7 +32,8 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
                                                      @Param("number") String numberBuilding);
 
     @Query(value = "WITH RECURSIVE building_history AS ("
-            + "  SELECT * FROM building WHERE id = :idBuilding " +
+            + "  SELECT * FROM building WHERE street_id = :idStreet " +
+            "and _number = :number " +
             "and amnd_state = 'A' "
             + "  UNION ALL "
             + "  SELECT s.* FROM building s "
@@ -40,5 +41,6 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
             + ") "
             + "SELECT * FROM building_history",
             nativeQuery = true)
-    List<Building> findHistoryBuildingInfo(@Param("idBuilding") Long idBuilding);
+    List<Building> findHistoryBuildingInfo(@Param("idStreet") Long idStreet,
+                                           @Param("number") String number);
 }

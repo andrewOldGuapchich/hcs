@@ -21,6 +21,7 @@ public class ClientService {
     private String authPort;
 
     public AuthDto authorizeUser(String jwtToken){
+        System.out.println("Client service");
         String url = UriComponentsBuilder.fromHttpUrl(authUrl + authPort + "/authorize/byToken")
                 .encode()
                 .toUriString();
@@ -30,6 +31,7 @@ public class ClientService {
         ResponseEntity<AuthDto> response = restTemplate
                 .exchange(url, HttpMethod.GET, entity, AuthDto.class);
 
+        System.out.println("Client service " + response.getBody().getRoles());
         return response.getBody();
     }
 }

@@ -2,6 +2,7 @@ package com.andrew.hcsservice.model.entity.counter;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "tariff")
+@Data
 public class Tariff {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

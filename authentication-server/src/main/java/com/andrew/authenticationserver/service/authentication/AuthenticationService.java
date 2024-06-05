@@ -37,6 +37,7 @@ public class AuthenticationService {
         String jwtToken = jwtTokenService.generateAccessToken(userDetails);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", jwtToken);
+        System.out.println("Authenticated");
 
         return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
     }

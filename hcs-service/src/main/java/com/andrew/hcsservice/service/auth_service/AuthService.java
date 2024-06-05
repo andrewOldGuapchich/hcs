@@ -16,7 +16,9 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String token) throws UsernameNotFoundException {
+        System.out.println("Auth service");
         AuthDto authDTO = clientService.authorizeUser(token);
+        System.out.println("Auth service " + authDTO);
         return new RegUser(authDTO.getEmail(), authDTO.getRoles());
     }
 }

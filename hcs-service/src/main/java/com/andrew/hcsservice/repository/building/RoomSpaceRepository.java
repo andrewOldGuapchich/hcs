@@ -14,7 +14,13 @@ import java.util.Optional;
 
 @Repository
 public interface RoomSpaceRepository extends JpaRepository<RoomSpace, Long> {
-    Optional<RoomSpace> findByNumberAndBuilding(int number, Building building);
+
+    @Query("select rs from RoomSpace rs " +
+            "where rs.building = :building " +
+            "and rs.number = :number" +
+            " and rs.amndState = 'A'")
+    Optional<RoomSpace> findByBuildingAndNumber(@Param("building") Building building,
+                                                @Param("number") int number);
     Optional<RoomSpace> findById(Long id);
 
     @Query("select rs from RoomSpace rs " +

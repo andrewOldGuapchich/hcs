@@ -1,6 +1,5 @@
 package com.andrew.hcsservice.model.entity.building;
 
-import com.andrew.hcsservice.model.dto.roomspace.RoomSpaceCreateDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;

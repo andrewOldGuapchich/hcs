@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class Counter {
 
     @Column(name = "amnd_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date amndDate;
+    private LocalDate amndDate;
 
     @Column(name = "amnd_state")
     private String amndState;
@@ -33,11 +34,11 @@ public class Counter {
 
     @Column(name = "date_from")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date fromDate;
+    private LocalDate fromDate;
 
     @Column(name = "date_to")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date toDate;
+    private LocalDate toDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id")
@@ -59,7 +60,8 @@ public class Counter {
             optional = false
     )
     @JsonIgnore
-    private Counter counter;
+    @JoinColumn(name = "counter_oid")
+    private Counter oidCounter;
 
     @OneToMany(
             mappedBy = "counter",

@@ -22,8 +22,12 @@ public class AuthorizationService {
     private final JwtTokenService jwtTokenService;
 
     public ResponseEntity<?> tokenAuthorize(String token){
+        System.out.println("token - " + token);
         //token = substringToken(token);
-        if(jwtTokenService.validateAccessToken(token)){
+        if (token.isEmpty()){
+            return ResponseEntity.ok().build();
+        }
+        else if(jwtTokenService.validateAccessToken(token)){
             String email = jwtTokenService.getUsername(token);
             Optional<User> user = userRepository.findByEmail(email);
             if(user.isEmpty())

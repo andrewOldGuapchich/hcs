@@ -1,5 +1,6 @@
 package com.andrew.hcsservice.service.logic_service.doc;
 
+import com.andrew.hcsservice.exceptions.ResponseBody;
 import com.andrew.hcsservice.model.dto.doc.DocDto;
 import com.andrew.hcsservice.model.entity.doc.Doc;
 import com.andrew.hcsservice.model.entity.Owner;
@@ -9,6 +10,7 @@ import com.andrew.hcsservice.repository.doc.DocRepository;
 import com.andrew.hcsservice.service.service_interfaces.DocInterfaces;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +30,20 @@ public class DocService implements DocInterfaces {
             return ResponseEntity.badRequest().body("Такой пользователь уже зарегистрирован!");
         }
         else {*/
-            Doc doc = mapper.map(docDTO, Doc.class);
+            Doc doc = new Doc();
+            doc.setOwnerSurname(docDTO.getOwnerName().getOwnerSurname());
+            doc.setOwnerName(docDTO.getOwnerName().getOwnerName());
+            doc.setOwnerPatronymic(docDTO.getOwnerName().getOwnerPatronymic());
+            doc.setPassport(docDTO.getOwnerData().getPassport());
+            doc.setBirthDate(docDTO.getOwnerData().getBirthDate());
+            doc.setEmail(docDTO.getOwnerInfo().getEmail());
+            doc.setPhoneNumber(docDTO.getOwnerInfo().getPhoneNumber());
             doc.setCreateDate(LocalDate.now());
             doc.setStatus(DocStatus.WAITING.getShortName());
             doc.setDocumentType(DocType.NEW.getShortName());
             saveDoc(doc);
-            return ResponseEntity.ok(doc);
+            return ResponseEntity.ok()
+                    .body(new ResponseBody<>(HttpStatus.OK.value(), doc));
         //}
     }
 

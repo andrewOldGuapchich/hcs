@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor "Admin"
+"User" -> "Object Controller" :<b> PUT /admin/create-object\n<b>body:{...}
+"Object Controller" -> "Object Service" :Передача тела запроса на\nсервис
+"Object Service" -> "Object Repository" :Проверка корректности новых данных\nс помощью репозитория
+database "Housing database"
+"Object Repository" -> "Housing database" :Запрос к базе данных
+"Housing database" --> "Object Repository" :Ответ из базы данных
+"Object Repository" --> "Object Service" :Передача ответа из базы данных на сервис
+"Object Service" -> "Object Service" :Проверка условия существования объекта
+alt Объект не найден
+"Object Service" -> "Object Service" :Формирование ответа
+"Object Service" --> "Object Controller" :Отправка ответа на контроллер
+"Object Controller" --> "User" :<b>400 Bad Request\n<b>Объект не найден
+else Объект найден
+"Object Service" -> "Object Service" :Формирование исторических данных
+"Object Service" -> "Object Repository" :Отправка запроса на добавление в репозиторий
+"Object Repository" -> "Housing database" :Отправка запроса в базу данных
+"Housing database" --> "Object Repository" :Ответ из базы данных
+"Object Repository" --> "Object Service" :Отправка ответа на сервис
+"Object Service" -> "Object Service" :Обновление данных текущего объекта
+"Object Service" -> "Object Repository" :Отправка запроса на добавление в репозиторий
+"Object Repository" -> "Housing database" :Отправка запроса в базу данных
+"Housing database" --> "Object Repository" :Ответ из базы данных
+"Object Repository" --> "Object Service" :Отправка ответа на сервис
+"Object Service" -> "Object Service" :Формирование ответа
+"Object Service" --> "Object Controller" :Отправка на контроллер
+"Object Controller" --> "User" : <b>200 OK\n<b>body: {...}
+end
+
+@enduml

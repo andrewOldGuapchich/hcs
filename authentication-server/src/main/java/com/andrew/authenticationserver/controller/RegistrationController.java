@@ -18,10 +18,12 @@ public class RegistrationController {
     public ResponseEntity<?> send(@RequestBody PasswordDto passwordDto,
                                   @RequestParam(name="email") String email){
         return registrationService.sendEmailCode(passwordDto, email);
+        //return ResponseEntity.ok("На почту выслан код проверки");
     }
 
     @PostMapping("/add-user")
     public ResponseEntity<?> info(@RequestBody RegistrationUserDto registrationUserDto){
+
         return registrationService.registrationUser(registrationUserDto);
     }
 }

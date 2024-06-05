@@ -30,9 +30,13 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> findWaitingByEmail(String email){
+        return userRepository.findWaitingByEmail(email);
+    }
+
 
     public void updateUserStatus(String email){
-        User user = findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(
+        User user = findWaitingByEmail(email).orElseThrow(() -> new UsernameNotFoundException(
                 String.format("Пользователь '%s' не найден!", email)
         ));
 

@@ -1,6 +1,6 @@
 package com.andrew.hcsservice.config;
 
-import com.andrew.hcsservice.config.filter.JwtFilter;
+import com.andrew.hcsservice.filter.JwtFilter;
 import com.andrew.hcsservice.service.auth_service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +21,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+        System.out.println("filter chain");
         http
                 .csrf().disable()
                 .cors().disable()
@@ -30,12 +31,15 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasAuthority("ADMIN")
                 .antMatchers("/internal/**").hasAuthority("WORKER")
-                .antMatchers("/flat/**").hasAuthority("ADMIN")
+                .antMatchers("/room-space/**").hasAuthority("ADMIN")
                 .antMatchers("/street/**").hasAuthority("ADMIN")
                 .antMatchers("/building/**").hasAuthority("ADMIN")
                 .antMatchers("/doc/**").permitAll()
                 .antMatchers("/owner/activate-user/**").permitAll()
                 .antMatchers("/owner/**").hasAuthority("USER")
+                .antMatchers("/counter/**").permitAll()
+                .antMatchers("/reading/**").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll()
                 .anyRequest().denyAll()
                 .and()
                 .userDetailsService(authService)

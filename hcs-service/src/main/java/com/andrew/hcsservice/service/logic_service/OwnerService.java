@@ -3,7 +3,6 @@ package com.andrew.hcsservice.service.logic_service;
 import com.andrew.hcsservice.exceptions.AppException;
 import com.andrew.hcsservice.exceptions.ResponseBody;
 import com.andrew.hcsservice.model.dto.doc.IdDto;
-import com.andrew.hcsservice.model.dto.doc.UpdateDocDto;
 import com.andrew.hcsservice.model.dto.owner.InfoOwnerDto;
 import com.andrew.hcsservice.model.dto.owner.OwnerDto;
 import com.andrew.hcsservice.model.entity.doc.Doc;
@@ -15,11 +14,8 @@ import com.andrew.hcsservice.model.status.DocStatus;
 import com.andrew.hcsservice.repository.doc.DocRepository;
 import com.andrew.hcsservice.repository.OwnerRepository;
 import com.andrew.hcsservice.service.service_interfaces.DocInterfaces;
-import com.andrew.hcsservice.service.service_interfaces.OwnerInterfaces;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,7 +28,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class OwnerService implements OwnerInterfaces {
+public class OwnerService {
     private final OwnerRepository ownerRepository;
     private final DocRepository docRepository;
     private DocInterfaces docServiceInterfaces;
@@ -41,37 +37,74 @@ public class OwnerService implements OwnerInterfaces {
 
     private final ModelMapper mapper;
 
-    //редактирование пользовательских данных. редактирование недвижимости производится админом системы
-    public ResponseEntity<?> updateOwnerInfo(OwnerDto updateOwnerDto, Long ownerId){
+    public ResponseEntity<?> updateOwnerInfo(OwnerDto updateOwnerDto, String passport){
         try{
-            Optional<Owner> optionalOwner = ownerRepository.findById(ownerId);
-            Owner oldOwner = validateAndGetOwner(optionalOwner);
-            oldOwner.setAmndState(AmndStatus.INACTIVE.getShortName());
-            oldOwner.setAmndDate(LocalDate.now());
-            oldOwner.setId(ownerId);
+            Optional<Owner> optionalOwner = ownerRepository.findByPassport(passport);
+            Owner currentOwner = validateAndGetOwner(optionalOwner);
+            Owner addOwner = new Owner();
+
+            addOwner.setName(currentOwner.getName());
+            addOwner.setSurname(currentOwner.getSurname());
+            addOwner.setPatronymic(currentOwner.getPatronymic());
+            addOwner.setPassport(currentOwner.getPassport());
+            addOwner.setBirthDate(currentOwner.getBirthDate());
+            addOwner.setEmail(currentOwner.getEmail());
+            addOwner.setPhoneNumber(currentOwner.getPhoneNumber());
+            addOwner.setAmndDate(currentOwner.getAmndDate());
+            addOwner.setAmndState(AmndStatus.INACTIVE.getShortName());
+            addOwner.setOidOwner(currentOwner.getOidOwner());
+            ownerRepository.save(addOwner);
+
+            currentOwner.setName(updateOwnerDto.getOwnerName().getOwnerName());
+            currentOwner.setSurname(updateOwnerDto.getOwnerName().getOwnerSurname());
+            currentOwner.setPatronymic(updateOwnerDto.getOwnerName().getOwnerPatronymic());
+            currentOwner.setPassport(updateOwnerDto.getOwnerData().getPassport());
+            currentOwner.setBirthDate(updateOwnerDto.getOwnerData().getBirthDate());
+            currentOwner.setEmail(updateOwnerDto.getOwnerInfo().getEmail());
+            currentOwner.setPhoneNumber(updateOwnerDto.getOwnerInfo().getPhoneNumber());
+            currentOwner.setAmndDate(LocalDate.now());
+            currentOwner.setOidOwner(addOwner);
+            /*
+            List<OwnerRoom> ownerRoomList = oldOwner.getOwnerRoomList();
+
+            oldOwner.setOwnerRoomList(null);
+            ownerRepository.save(oldOwner);
 
             Owner newOwner = mapper.map(updateOwnerDto, Owner.class);
             newOwner.setAmndDate(LocalDate.now());
             newOwner.setAmndState(AmndStatus.ACTIVE.getShortName());
             newOwner.setOidOwner(oldOwner);
-            newOwner.setOwnerRoomList(oldOwner.getOwnerRoomList());
+            newOwner.setOwnerRoomList(ownerRoomList);*/
+            ownerRepository.save(currentOwner);
 
-            ownerRepository.save(oldOwner);
-            ownerRepository.save(newOwner);
 
-            List<OwnerRoom> ownerRoomList = ownerRoomSpaceService.findByOwner(oldOwner);
-            for(OwnerRoom ownerRoom : ownerRoomList){
+           /* for(OwnerRoom ownerRoom : ownerRoomList){
                 ownerRoom.setOwner(newOwner);
             }
 
             ownerRoomSpaceService.saveAll(ownerRoomList);
 
+            */
+
             return ResponseEntity.ok()
-                    .body(new ResponseBody<>(HttpStatus.OK.value(), newOwner));
+                    .body(new ResponseBody<>(HttpStatus.OK.value(), currentOwner));
         } catch (AppException appException){
             return ResponseEntity.badRequest()
                     .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
         }
+    }
+
+    private Owner mapOwnerUpdateDtoOnOwner(OwnerDto ownerDto){
+        Owner owner = new Owner();
+        owner.setName(ownerDto.getOwnerName().getOwnerName());
+        owner.setSurname(ownerDto.getOwnerName().getOwnerSurname());
+        owner.setPatronymic(ownerDto.getOwnerName().getOwnerPatronymic());
+        owner.setPassport(ownerDto.getOwnerData().getPassport());
+        owner.setBirthDate(ownerDto.getOwnerData().getBirthDate());
+        owner.setEmail(ownerDto.getOwnerInfo().getEmail());
+        owner.setPhoneNumber(ownerDto.getOwnerInfo().getPhoneNumber());
+
+        return owner;
     }
 
     public ResponseEntity<?> createDeleteDoc(Long ownerId){
@@ -154,7 +187,7 @@ public class OwnerService implements OwnerInterfaces {
 
     public ResponseEntity<?> findOwnerInfo(String email, String passport){
         try{
-            Optional<Owner> optionalOwner = findByPassportAndEmail(email, passport);
+            Optional<Owner> optionalOwner = findByEmailAndPassport(email, passport);
             Owner owner = validateAndGetOwner(optionalOwner);
 
             return ResponseEntity.ok()
@@ -166,7 +199,6 @@ public class OwnerService implements OwnerInterfaces {
     }
 
     public List<Owner> findAll(){
-        List<Owner> owners = ownerRepository.findAll();
         return ownerRepository.findAll();
     }
 
@@ -180,7 +212,7 @@ public class OwnerService implements OwnerInterfaces {
         return infoOwnerList;
     }
 
-    public Optional<Owner> findByPassportAndEmail(String email, String passport){
+    public Optional<Owner> findByEmailAndPassport(String email, String passport){
         return ownerRepository.findByEmailAndPassport(email, passport);
     }
 

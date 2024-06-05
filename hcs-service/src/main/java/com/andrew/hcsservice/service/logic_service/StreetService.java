@@ -26,9 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StreetService {
     private final StreetRepository streetRepository;
-    private final BuildingRepository buildingRepository;
     private final ModelMapper mapper;
-
 
     public ResponseEntity<?> createStreet(CreateStreetDto createStreetDto) {
         Optional<Street> streetOptional =
@@ -48,32 +46,28 @@ public class StreetService {
     }
 
     @Transactional
-    public ResponseEntity<?> updateStreet(CreateStreetDto updateStreetDto, Long idStreet){
+    public ResponseEntity<?> updateStreet(CreateStreetDto updateStreetDto, String name){
         try{
             Optional<Street> streetOptional =
-                    streetRepository.findById(idStreet);
+                    streetRepository.findStreetByName(name);
+            Street currentStreet = validateAndGetStreet(streetOptional);
+            Street oldStreet = new Street();
 
-            Street oldStreet = validateAndGetStreet(streetOptional);
-            oldStreet.setAmndDate(LocalDate.now());
+            oldStreet.setName(currentStreet.getName());
+            oldStreet.setAmndDate(currentStreet.getAmndDate());
             oldStreet.setAmndState(AmndStatus.INACTIVE.getShortName());
-            oldStreet.setId(idStreet);
-
-            Street newStreet = mapper.map(updateStreetDto, Street.class);
-            newStreet.setAmndDate(LocalDate.now());
-            newStreet.setAmndState(AmndStatus.ACTIVE.getShortName());
-            newStreet.setOidStreet(oldStreet);
-
-            streetRepository.save(newStreet);
+            oldStreet.setCountBuilding(currentStreet.getCountBuilding());
+            oldStreet.setOidStreet(currentStreet.getOidStreet());
             streetRepository.save(oldStreet);
 
-            List<Building> buildings = buildingRepository.findBuildingByStreet(oldStreet);
-            for(Building building : buildings){
-                building.setStreet(newStreet);
-            }
+            currentStreet.setName(updateStreetDto.getName());
+            currentStreet.setCountBuilding(updateStreetDto.getCountBuilding());
+            currentStreet.setAmndDate(LocalDate.now());
+            currentStreet.setOidStreet(oldStreet);
+            streetRepository.save(currentStreet);
 
-            buildingRepository.saveAll(buildings);
             return ResponseEntity.ok()
-                    .body(new ResponseBody<>(HttpStatus.OK.value(), newStreet));
+                    .body(new ResponseBody<>(HttpStatus.OK.value(), currentStreet));
         } catch (AppException appException){
             return ResponseEntity.badRequest()
                     .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
@@ -81,45 +75,33 @@ public class StreetService {
     }
 
     @Transactional
-    public ResponseEntity<?> deleteStreet(Long idStreet){
+    public ResponseEntity<?> deleteStreet(String name){
         try{
             Optional<Street> streetOptional =
-                    streetRepository.findById(idStreet);
-            Street deleteStreet = validateAndGetStreet(streetOptional);
-            deleteStreet.setId(idStreet);
-            deleteStreet.setAmndDate(LocalDate.now());
-            deleteStreet.setAmndState(AmndStatus.INACTIVE.getShortName());
-            streetRepository.save(deleteStreet);
+                    streetRepository.findStreetByName(name);
+            Street currentStreet = validateAndGetStreet(streetOptional);
+            Street oldStreet = new Street();
 
-            Street newStreet = getNewStreet(deleteStreet);
-            newStreet.setAmndState(AmndStatus.CLOSE.getShortName());
-            streetRepository.save(newStreet);
+            oldStreet.setName(currentStreet.getName());
+            oldStreet.setAmndDate(currentStreet.getAmndDate());
+            oldStreet.setAmndState(AmndStatus.INACTIVE.getShortName());
+            oldStreet.setCountBuilding(currentStreet.getCountBuilding());
+            oldStreet.setOidStreet(currentStreet.getOidStreet());
+            streetRepository.save(oldStreet);
 
-            List<Building> buildings = buildingRepository.findBuildingByStreet(deleteStreet);
-            for(Building building : buildings){
-                building.setStreet(newStreet);
-            }
+            currentStreet.setAmndState(AmndStatus.CLOSE.getShortName());
+            currentStreet.setAmndDate(LocalDate.now());
+            currentStreet.setOidStreet(oldStreet);
+            streetRepository.save(currentStreet);
 
-            buildingRepository.saveAll(buildings);
             return ResponseEntity.ok()
-                    .body(new ResponseBody<>(HttpStatus.OK.value(), newStreet));
+                    .body(new ResponseBody<>(HttpStatus.OK.value(), currentStreet));
         } catch (AppException appException){
             return ResponseEntity.badRequest()
                     .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
         }
     }
 
-    public ResponseEntity<?> getStreetInfo(Long idStreet){
-        try{
-            Optional<Street> streetOptional = streetRepository.findById(idStreet);
-            Street street = validateAndGetStreet(streetOptional);
-            InfoStreetDto streetDto = mapper.map(street, InfoStreetDto.class);
-            return ResponseEntity.ok(streetDto);
-        } catch (AppException appException) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), appException.getMessage()));
-        }
-    }
 
     public ResponseEntity<?> getAll(){
         List<Street> streetList = streetRepository.findAll();
@@ -140,6 +122,10 @@ public class StreetService {
         }
     }
 
+    public Street findByName(String name){
+        Optional<Street> streetOptional = streetRepository.findStreetByName(name);
+        return validateAndGetStreet(streetOptional);
+    }
     public ResponseEntity<?> getHistoryInfo(Long idStreet) {
         return ResponseEntity.ok()
                 .body(new ResponseBody<>(HttpStatus.OK.value(),
@@ -151,7 +137,7 @@ public class StreetService {
         }
         Street street = streetOptional.get();
         if (!street.getAmndState().equals(AmndStatus.ACTIVE.getShortName())) {
-            throw new AppException("Street not found! Incorrect id!");
+            throw new AppException("Street not found! Incorrect name!");
         }
         return street;
     }

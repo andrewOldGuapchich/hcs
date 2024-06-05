@@ -26,7 +26,7 @@ public class RegistrationService {
     private final RestTemplate restTemplate;
 
     public ResponseEntity<?> registrationUser(RegistrationUserDto registrationUserDto) {
-        if (userService.findByEmail(registrationUserDto.getEmail()).get().getCode() != registrationUserDto.getCode()) {
+        if (userService.findWaitingByEmail(registrationUserDto.getEmail()).get().getCode() != registrationUserDto.getCode()) {
             return ResponseEntity.badRequest().body("Код не верный!");
         } else {
             userService.updateUserStatus(registrationUserDto.getEmail());

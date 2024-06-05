@@ -1,6 +1,10 @@
 package com.andrew.hcsservice.service.logic_service;
 
 import com.andrew.hcsservice.exceptions.ResponseBody;
+import com.andrew.hcsservice.model.dto.RoomOwnerDto;
+import com.andrew.hcsservice.model.entity.building.Building;
+import com.andrew.hcsservice.model.entity.building.RoomSpace;
+import com.andrew.hcsservice.model.entity.building.Street;
 import com.andrew.hcsservice.model.entity.doc.Doc;
 import com.andrew.hcsservice.model.entity.Owner;
 import com.andrew.hcsservice.model.status.DocStatus;
@@ -24,8 +28,12 @@ import java.util.Optional;
 public class AdminService {
     private DocService docService;
     private OwnerService ownerService;
+    private final RoomSpaceService roomSpaceService;
     private final EmailService emailService;
     private final RestTemplate restTemplate;
+    private final StreetService streetService;
+    private final BuildingService buildingService;
+    private final OwnerRoomSpaceService ownerRoomSpaceService;
     @Autowired
     public void setDocService(@Lazy DocService docService) {
         this.docService = docService;
@@ -37,6 +45,24 @@ public class AdminService {
     }
     public ResponseEntity<?> getWaitingStatus(String type){
         return ResponseEntity.ok().body(docService.getWaitingStatus(type));
+    }
+    public ResponseEntity<?> addRoomForOwner(RoomOwnerDto roomOwnerDto){
+        Optional<Owner> optionalOwner = ownerService.findByEmailAndPassport(
+                roomOwnerDto.getOwner().getOwnerEmail(),
+                roomOwnerDto.getOwner().getOwnerPassport());
+        if(optionalOwner.isEmpty()){
+            return ResponseEntity.badRequest()
+                    .body(new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "User not found"));
+        }
+        Owner owner = optionalOwner.get();
+        Building building = buildingService.findBuildingByStreetAndNumber(roomOwnerDto.getAddress().getStreetName(),
+                roomOwnerDto.getAddress().getBuildNumber());
+        RoomSpace roomSpace = roomSpaceService.findByBuildingAndNumber(building, roomOwnerDto.getAddress().getRoomNumber());
+
+        ownerRoomSpaceService.addRoomSpaceForOwner(owner, roomSpace);
+
+        return ResponseEntity.ok()
+                .body(new ResponseBody<>(HttpStatus.OK.value(), roomOwnerDto));
     }
 
     public ResponseEntity<?> sendDocList(List<Long> idDocList){
@@ -68,7 +94,7 @@ public class AdminService {
         }
 
         Doc deleteDoc = deleteDocOptional.get();
-        Optional<Owner> deleteOwnerOptional = ownerService.findByPassportAndEmail(deleteDoc.getEmail(), deleteDoc.getPassport());
+        Optional<Owner> deleteOwnerOptional = ownerService.findByEmailAndPassport(deleteDoc.getEmail(), deleteDoc.getPassport());
         if(deleteOwnerOptional.isEmpty()){
             return ResponseEntity.badRequest().body(
                     new ResponseBody<>(HttpStatus.BAD_REQUEST.value(), "Owner not found!"));

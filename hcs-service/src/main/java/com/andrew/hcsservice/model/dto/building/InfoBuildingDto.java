@@ -9,6 +9,7 @@ import java.util.List;
 public class InfoBuildingDto {
     private Long id;
     private String street;
+    private String number;
     private int countRoomSpace;
     private List<RoomSpace> roomSpaceList;
 }

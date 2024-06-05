@@ -24,4 +24,7 @@ public interface OwnerRepository extends JpaRepository<Owner, Long> {
 
     @Query("select o from Owner o where o.email = :email and o.amndState = 'W'")
     Optional<Owner> findWaitingByEmail(@Param("email") String email);
+
+    @Query("select o from Owner o where o.passport = :passport and o.amndState = 'A'")
+    Optional<Owner> findByPassport(@Param("passport") String passport);
 }

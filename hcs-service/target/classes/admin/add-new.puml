@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor Admin
+    participant "Logic Server"
+    participant "Authentication Server"
+    database "Housing Database"
+    Admin -> "Logic Server" :<b>Список документов на регистрацию\n<b>GET /all-doc
+    "Logic Server" -> "Authentication Server" : <b>Запрос авторизации администратора
+    "Authentication Server" -> "Authentication Server" : <b>Проверка токена
+    "Authentication Server" --> "Logic Server" :Возврат списка ролей
+    "Logic Server" --> "Logic Server" :Проверка наличия роли ADMIN
+    "Logic Server" -> "Housing Database" :<b>Запрос на получения списка заявлений
+    "Housing Database" --> "Logic Server" : Список заявлений со статусом W
+    "Logic Server" --> Admin : <b>200 OK \n Список заявлений в теле ответа
+    Admin -> "Logic Server" :<b>Список документов на регистрацию\n<b>POST /register-user
+    "Logic Server" -> "Authentication Server" : <b>Запрос авторизации администратора
+    "Authentication Server" -> "Authentication Server" : <b>Проверка токена
+    "Authentication Server" --> "Logic Server" :Возврат списка ролей
+    "Logic Server" --> "Logic Server" :Проверка наличия роли ADMIN
+    "Logic Server" -> "Housing Database" :<b>Вставка новых пользователей (статут W)
+    "Housing Database" --> "Logic Server" :Статус транзакции
+    "Logic Server" -> "SMTP Yandex" :Отправка запроса на почтовый сервер
+    actor User
+    "SMTP Yandex" -> User: Отправка письма на почту\nс ссылкой для ввода пароля
+    "Logic Server" --> Admin : <b>200 OK \n Список новых пользователей в теле ответа
+@enduml

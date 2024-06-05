@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor User
+box "Logic Server"
+    participant "JWT-filter"
+    participant "Endpoint"
+    participant "Auth Service"
+    participant "Client service"
+    participant "Object Service"
+    database "Housing Database"
+end box
+
+box "Authenticate Server"
+    participant "Authorize Service"
+    database "Credential Database"
+end box
+
+User -> "JWT-filter" :Входящий запрос попадает в фильтр\nВ заголовке находится токен
+"JWT-filter" -> "Auth Service" :Передача токена из запроса\nна сервис авторизации
+"Auth Service" -> "Client service" :Передача токена на \nклиентский сервис
+"Client service" -> "Authorize Service" : Передача токена по адресу /authorize/byToken на сервер аутентификации
+"Authorize Service" -> "Authorize Service" :Получение данных из токена
+"Authorize Service" -> "Credential Database" :Запрос к базе данны\nдля получения ролей пользователя
+"Authorize Service" -> "Authorize Service" : Формирование ответа (email, список ролей)
+"Credential Database" --> "Authorize Service" :Возврат ролей для пользователя
+"Authorize Service" --> "Client service" :200 ОК. В теле ответа расшифровка токена
+"Client service" --> "Auth Service" :Передача тела ответа на сервис авторизации
+"Auth Service" -> "JWT-filter" :Передача тела ответа на фильтр
+"JWT-filter" -> "JWT-filter" :Определение ролей для пользователя
+"JWT-filter" -> "Endpoint" :Вызов контроллера, обрабатывающего исходный запрос
+"Endpoint" -> "Object Service" :Вызов сервиса
+"Object Service" -> "Housing Database" :Обращение к базе данных
+"Housing Database" --> "Object Service" :Ответ из базы данных
+"Object Service" -> "Object Service" :Формирование тела ответа
+"Object Service" --> "Endpoint" :Передача ответа на контроллер
+"Endpoint" --> "JWT-filter" :Ответ на запрос проходит через фильтр
+"JWT-filter" --> User :200 ОК. Передача ответа пользователю
+
+@enduml
